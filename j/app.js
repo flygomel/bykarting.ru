@@ -1,4 +1,14 @@
+let isMobile = false;
+if( /Android|webOS|iPhone|iPad|iPod|Opera Mini/i.test(navigator.userAgent) ) {
+	isMobile = true;
+}
+
 $(function() {
+	if(isMobile)
+		$('.oplati .oplati-details-qr').hide();
+	else
+		$('.oplati .oplati-details-button').hide();
+
 	$(window).resize(function() {
 		var old_width = $(window).data('old_width'),
 			new_width = $(window).width();
@@ -8,14 +18,17 @@ $(function() {
 	$('header a').click(function() {
 		var id = $(this).attr('href'),
 			$el = $(id);
+
 		if(id == '#menu')
 			$('body').toggleClass('menu-opened');
 		else if(id == '#book')
 			$('.book').show();
+		else if(id == '#payment')
+			$('.payment').show();
 		else
-			$('body')
+			$('html, body')
 				.removeClass('menu-opened')
-				.animate({scrollTop: $el.position().top - $('header').height()});
+				.animate({scrollTop: $el.offset().top - $('header').height()});
 		return false;
 	});
 	function init_map() {
@@ -171,6 +184,89 @@ $(function() {
 	$('[href="#callback"]').click(function() {
 		$('.callback').show();
 		$('.callback [name=type]').val($(this).attr('data-type'));
+		return false;
+	});
+
+	$('[href="#oplati"]').click(function() {
+		$('.oplati').show();
+		$('.oplati-form').show();
+		$('.oplati-details').hide();
+		$('.oplati-success').hide();
+		return false;
+	});
+
+	const checkPayment = () => {
+		const visible = $('.oplati').is(':visible');
+		const paymentId = $('.oplati').attr('data-payment-id');
+		if(!visible && !paymentId) return;
+
+		fetch(`https://bpay-testcashdesk.lwo.by/ms-pay/pos/payments/${paymentId}`, {
+			headers: {
+				regNum: 'OPL000003201',
+				password: 'bykartingRu1',
+				'Content-Type': 'application/json'
+			},
+		}).then(_ => _.json()).then(data => {
+			if(data.status === 1) {
+				$('.oplati').attr('data-payment-id', null);
+				$('.oplati-form').hide();
+				$('.oplati-details').hide();
+				$('.oplati-success').show();
+				return;
+			}
+			setTimeout(checkPayment, 3000);
+		}).catch(() => setTimeout(checkPayment, 3000));
+
+	}
+
+	$('.oplati form').submit(function() {
+		var $form = $(this);
+
+		$form.find('.continue').hide();
+		$form.find('.loading').show();
+		$form.find('[type=number]').attr('disabled', true);
+		const sum = parseFloat($form.find('[type=number]').val());
+		const comment = $form.find('[name=comment]').val();
+		$('.oplati-details-sum').text(`К оплате ${sum} BYN`);
+		fetch('https://bpay-testcashdesk.lwo.by/ms-pay/pos/webPayments', {
+			method: 'POST',
+			headers: {
+				regNum: 'OPL000003201',
+				password: 'bykartingRu1',
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				"sum": sum,
+				// "shift": "smena 2",
+				"orderNumber" : Date.now(),
+				"regNum": "OPL000003201",
+				"details": {
+					"receiptNumber": Date.now(),
+					"items": comment ? [
+						{
+							"type": 1,
+							"name": comment,
+							"quantity": sum,
+							"price": 10,
+							"cost": sum
+						}
+					] : [],
+					"amountTotal": sum,
+					// "footerInfo": "ЛВО - QR для всех!"
+				}
+			})
+		}).then(_ => _.json()).then(data => {
+			$('.oplati-form').hide();
+			$('.oplati-details').show();
+			$('.oplati-details-qr').attr('src', `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${data.dynamicQR}`);
+			$('.oplati-details-button').attr('href', `https://getapp.o-plati.by/map/?app_link=${data.dynamicQR}`);
+			$('.oplati').attr('data-payment-id', data.paymentId);
+			checkPayment();
+		}).finally(() => {
+			$form.find('[type=number]').attr('disabled', false);
+			$form.find('.continue').show();
+			$form.find('.loading').hide();
+		});
 		return false;
 	});
 

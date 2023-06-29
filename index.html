@@ -40,6 +40,7 @@
           <a href="#cert" style="color:#ffc457">Подарок</a>
           <a href="#news">Новости</a>
           <a href="#price">Цены</a>
+          <a href="#payment">Оплата</a>
           <a href="#faq">FAQ</a>
           <a href="#contacts">Контакты</a>
           <a href="#" class="ms_booking" style="display: none;" data-discount="скидка 25%">Забронировать</a>
@@ -284,6 +285,9 @@
         </script>
       </div>
     </section>
+    <div class="footer">
+      <img src="/i/logo_Oplati_black.svg" />
+    </div>
     <div class="book popup">
       <form>
         <div class="close" onclick="$(this).closest('.popup').hide()"></div>
@@ -311,7 +315,55 @@
         <input type="submit" value="ПРОДОЛЖИТЬ">
       </form>
     </div>
-    <a href="https://beauty.dikidi.net/#widget=84001" style="z-index: 1;    position: fixed;    bottom: 32px;    background: #36c430;    color: white;    left: 50%;    margin-left: -67px;    padding: 12px 24px;    text-decoration: none;    font-size: 16px;    border-radius: 6px;    box-shadow: 0px 0px 15px #0003;">Записаться</a>
+    <div class="payment popup">
+      <form style="padding-top:60px;width: auto;max-width: 600px;">
+        <div class="close" onclick="$(this).closest('.popup').hide()"></div>
+        <img src="/i/logo_Oplati_black.svg" style="height: 30px;" />
+        <h1>Оплата через приложение Оплати</h1>
+        <p>Бесплатный платежный сервис, который работает с использованием OR-кодов.</p>
+        <p>Скачать приложение «Оплати» вы можете в App Store, Google Play или AppGallery: <a href="https://getapp.o-plati.by" target="_blank">https://getapp.o-plati.by</a>.<br>
+        Пополнение электронного кошелька возможно с карточек любых банков без комиссии, через ЕРИП, банковским переводом или переводом с другого кошелька «Оплати».</p>
+        <p>После выбора способа оплаты через систему «Оплати», вы увидите уникальный QR-код, который позволит вам произвести платеж, или кнопку с переходом в приложение на мобильном устройстве.<br>
+        Уникальный ОК-код будет доступен к сканированию приложением на вашем телефоне в течение 60] секунд. В случае, если время на оплату истекло, у вас будет возможность получить новый QR-код для завершения оплаты</p>
+        <p>Электронный чек оплаты можно посмотреть в истории платежей приложения «Оплати».<br>
+        В случае аннулирования заказа, возврат осуществляется на электронный кошелёк сервиса «Оплати», с которого была произведена оплата.</p>
+      </form>
+    </div>
+    <div class="oplati popup">
+      <form style="padding-top:60px;text-align: center;">
+        <div class="close" onclick="$(this).closest('.popup').hide()"></div>
+        <div class="oplati-form">
+          <img src="/i/oplati.png" style="height: 60px;" />
+          <div>
+            <span style="font-size: 16px;font-weight: 500;">Приложением оплати</span>
+            <p>После оформления заказа будет создан QR-код для оплаты.</p>
+          </div>
+          <div style="text-align: center;margin-bottom: 16px;">Введите суму</div>
+          <div style="display: flex;align-items: center;">
+            <input name="sum" required type="number" step=".01" placeholder="Сумма" value="10"> <span style="margin-left: 16px;margin-top: -10px;">BYN</span>
+          </div>
+          <input name="comment" type="text" placeholder="Коментарий">
+          <input type="submit" class="continue" value="ПРОДОЛЖИТЬ">
+          <input type="submit" class="loading" value="ЗАГРУЗКА..." disabled style="display: none;">
+        </div>
+        <div class="oplati-details">
+          <img src="/i/logo_Oplati_black.svg" style="height: 30px;margin-bottom: 20px;" />
+          <div class="oplati-details-sum"></div>
+          <div style="text-align: center;">Отсканируйте QR-код моб. приложением Оплати.</div>
+          <img style="width: 200px; height: 200px;margin-top: 24px;margin-bottom: 16px;" class="oplati-details-qr" />
+          <a class="button oplati-details-button" target="_blank" style="margin-top: 24px;">Оплатить</a>
+        </div>
+        <div class="oplati-success">
+          <img src="/i/logo_Oplati_black.svg" style="height: 30px;margin-bottom: 20px;" />
+          <div style="text-align: center;">Успешно оплачено</div>
+        </div>
+      </form>
+    </div>
+    <div style="z-index: 1;position: fixed;bottom: 32px;left: 50%;margin-left: -155px;display: flex;gap: 16px;">
+      <a href="https://beauty.dikidi.net/#widget=84001" style=" background: #36c430;    color: white;    padding: 12px 24px;    text-decoration: none;    font-size: 16px;    border-radius: 6px;    box-shadow: 0px 0px 15px #0003;">Записаться</a>
+      <a href="#oplati" style="background: #36c430;color: white;padding: 12px 33px;text-decoration: none;font-size: 16px;border-radius: 6px;box-shadow: 0px 0px 15px #0003;flex: 1;">Оплатить</a>
+    </div>
+
 <!--     <script type="text/javascript" src="https://w198093.yclients.com/widgetJS" charset="UTF-8"></script> -->
   </body>
 </html>
