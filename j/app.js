@@ -250,8 +250,8 @@ $(function() {
 						{
 							"type": 1,
 							"name": comment,
-							"quantity": sum,
-							"price": 10,
+							"quantity": 1,
+							"price": sum,
 							"cost": sum
 						}
 					] : [],
