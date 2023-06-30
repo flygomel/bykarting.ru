@@ -192,6 +192,7 @@ $(function() {
 		$('.oplati-form').show();
 		$('.oplati-details').hide();
 		$('.oplati-success').hide();
+		$('.oplati-error').hide();
 		return false;
 	});
 
@@ -207,11 +208,14 @@ $(function() {
 				'Content-Type': 'application/json'
 			},
 		}).then(_ => _.json()).then(data => {
-			if(data.status === 1) {
+			if(data.status > 0) {
 				$('.oplati').attr('data-payment-id', null);
 				$('.oplati-form').hide();
 				$('.oplati-details').hide();
-				$('.oplati-success').show();
+				if(data.status === 1)
+					$('.oplati-success').show();
+				else
+					$('.oplati-error').show();
 				return;
 			}
 			setTimeout(checkPayment, 3000);
