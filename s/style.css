@@ -1049,7 +1049,8 @@ footer {
 }
 
 .oplati-details,
-.oplati-success {
+.oplati-success,
+.oplati-error {
 	display: none;
 }
 
