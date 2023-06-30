@@ -266,7 +266,7 @@ $(function() {
 				"sum": sum,
 				// "shift": "smena 2",
 				"orderNumber" : num,
-				"regNum": "OPL000003201",
+				"regNum": "OPL000055563",
 				"details": {
 					"receiptNumber": num,
 					"items": comment ? [
