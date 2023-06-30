@@ -201,10 +201,10 @@ $(function() {
 		const paymentId = $('.oplati').attr('data-payment-id');
 		if(!visible && !paymentId) return;
 
-		fetch(`https://bpay-testcashdesk.lwo.by/ms-pay/pos/payments/${paymentId}`, {
+		fetch(`https://cashboxapi.o-plati.by/ms-pay/pos/payments/${paymentId}`, {
 			headers: {
-				regNum: 'OPL000003201',
-				password: 'bykartingRu1',
+				regNum: 'OPL000055563',
+				password: 'savichya65',
 				'Content-Type': 'application/json'
 			},
 		}).then(_ => _.json()).then(data => {
@@ -234,11 +234,11 @@ $(function() {
 		const sum = parseFloat($form.find('[type=number]').val());
 		const comment = $form.find('[name=comment]').val();
 		$('.oplati-details-sum').text(`К оплате ${sum} BYN`);
-		fetch('https://bpay-testcashdesk.lwo.by/ms-pay/pos/webPayments', {
+		fetch('https://cashboxapi.o-plati.by/ms-pay/pos/webPayments', {
 			method: 'POST',
 			headers: {
-				regNum: 'OPL000003201',
-				password: 'bykartingRu1',
+				regNum: 'OPL000055563',
+				password: 'savichya65',
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
