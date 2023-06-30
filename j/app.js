@@ -258,7 +258,7 @@ $(function() {
 						}
 					] : [{
 						"type": 1,
-						"name": `Заказ №%${num}`,
+						"name": `Заказ №${num}`,
 						"quantity": 1,
 						"price": sum,
 						"cost": sum
