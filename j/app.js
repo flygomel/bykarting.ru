@@ -196,6 +196,27 @@ $(function() {
 		return false;
 	});
 
+	$('.podarit').click(function() {
+		$('.podarok').show();
+		return false;
+	});
+
+	$('.podarok form').submit(function() {
+		var $form = $(this),
+			$callback = $form.parent();
+
+		const count = parseInt($form.find('[name=count]').val());
+		
+		$('.podarok').hide();
+		$('[href="#oplati"]').click();
+
+		$('.oplati form [name=sum]').val(25 * count);
+		$('.oplati form [name=comment]').val('Подарок');
+		
+
+		return false;
+	});
+
 	const checkPayment = () => {
 		const visible = $('.oplati').is(':visible');
 		const paymentId = $('.oplati').attr('data-payment-id');
@@ -204,7 +225,7 @@ $(function() {
 		fetch(`https://cashboxapi.o-plati.by/ms-pay/pos/payments/${paymentId}`, {
 			headers: {
 				regNum: 'OPL000055563',
-				password: 'savichya65',
+				password: 'Savichya65',
 				'Content-Type': 'application/json'
 			},
 		}).then(_ => _.json()).then(data => {
@@ -238,7 +259,7 @@ $(function() {
 			method: 'POST',
 			headers: {
 				regNum: 'OPL000055563',
-				password: 'savichya65',
+				password: 'Savichya65',
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({

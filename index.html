@@ -43,11 +43,11 @@
           <a href="#payment">Оплата</a>
           <a href="#faq">FAQ</a>
           <a href="#contacts">Контакты</a>
-          <a href="#" class="ms_booking" style="display: none;" data-discount="скидка 25%">Забронировать</a>
+          <a href="https://beauty.dikidi.net/#widget=84001" class="ms_booking" style="display: none;" data-discount="скидка 25%">Забронировать</a>
         </nav>
         <div class="mobile">
           <a href="#menu"><img src="i/menu.svg"></a>
-          <a href="#" class="ms_booking" style="display: none;" data-discount="скидка 25%">Забронировать</a>
+          <a href="https://beauty.dikidi.net/#widget=84001" class="ms_booking" style="display: none;" data-discount="скидка 25%">Забронировать</a>
         </div>
       </div>
     </header>
@@ -104,7 +104,7 @@
           <br>
           Вы всегда сможете с комфортом провести время после заезда или в ожидании ваших друзей, в то время как они оттачивают свое мастерство и соревнуются на трассе.
         </p>
-        <a href="#" class="ms_booking" data-type="corporate">ЗАКАЗАТЬ КОРПОРАТИВ</a>
+        <a href="https://beauty.dikidi.net/#widget=84001" class="ms_booking" data-type="corporate">ЗАКАЗАТЬ КОРПОРАТИВ</a>
       </div>
     </section>
     	<section class="actions" id="actions" style="background-image: url('uploads/widgets/57277a850edcf.jpg')">
@@ -135,7 +135,7 @@
         <p>
           Подарочный сертификат, приобретенный у нас, не имеет срока годности и может быть использован предъявителем как самостоятельно так и с друзьями
         </p>
-        <a href="#" class="ms_booking" data-type="cert">ПОДАРИТЬ</a>
+        <a href="#" class="ms_booking podarit" data-type="cert">ПОДАРИТЬ</a>
       </div>
     </section>
     <section class="news" id="news">
@@ -361,6 +361,15 @@
           <img src="/i/logo_Oplati_black.svg" style="height: 30px;margin-bottom: 20px;" />
           <div style="text-align: center;">Не удалось осуществить платеж</div>
         </div>
+      </form>
+    </div>
+    <div class="podarok popup">
+      <form style="padding-top:60px">
+        <span style="font-size: 18px;font-weight: 500;text-align: center;margin-bottom: 20px;display: block;">Подарок</span>
+        <div class="close" onclick="$(this).closest('.popup').hide()"></div>
+        <span style="font-size: 18px;font-weight: 500;text-align: center;margin-bottom: 20px;display: block;">Количество заездов:</span>
+        <input name="count" required type="number" placeholder="Количество" value="2">
+        <input type="submit" value="ПРОДОЛЖИТЬ">
       </form>
     </div>
     <div style="z-index: 1;position: fixed;bottom: 32px;left: 50%;margin-left: -155px;display: flex;gap: 16px;">
