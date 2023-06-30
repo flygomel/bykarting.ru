@@ -226,6 +226,8 @@ $(function() {
 	$('.oplati form').submit(function() {
 		var $form = $(this);
 
+		const num = Date.now();
+
 		$form.find('.continue').hide();
 		$form.find('.loading').show();
 		$form.find('[type=number]').attr('disabled', true);
@@ -242,10 +244,10 @@ $(function() {
 			body: JSON.stringify({
 				"sum": sum,
 				// "shift": "smena 2",
-				"orderNumber" : Date.now(),
+				"orderNumber" : num,
 				"regNum": "OPL000003201",
 				"details": {
-					"receiptNumber": Date.now(),
+					"receiptNumber": num,
 					"items": comment ? [
 						{
 							"type": 1,
@@ -254,7 +256,13 @@ $(function() {
 							"price": sum,
 							"cost": sum
 						}
-					] : [],
+					] : [{
+						"type": 1,
+						"name": `Заказ №%${num}`,
+						"quantity": 1,
+						"price": sum,
+						"cost": sum
+					}],
 					"amountTotal": sum,
 					// "footerInfo": "ЛВО - QR для всех!"
 				}
