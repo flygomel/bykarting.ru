@@ -210,7 +210,7 @@ $(function() {
 		$('.podarok').hide();
 		$('[href="#oplati"]').click();
 
-		$('.oplati form [name=sum]').val(25 * count);
+		$('.oplati form [name=sum]').val(30 * count);
 		$('.oplati form [name=comment]').val('Подарок');
 		
 
