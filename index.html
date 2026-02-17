@@ -523,6 +523,13 @@
                     <a href="#" class="hover:text-white">Публичная оферта</a>
                 </div>
             </div>
+
+            <div class="mt-8 pt-6 border-t border-white/5 flex justify-center">
+                <button onclick="openPaymentModal()" class="inline-flex items-center justify-center gap-2 rounded-xl bg-neon text-black font-bold px-6 py-3 hover:bg-white transition-colors">
+                    <i class="fa-solid fa-wallet"></i>
+                    Оплатить
+                </button>
+            </div>
         </div>
     </footer>
 
@@ -559,37 +566,283 @@
         </div>
     </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО ОПЛАТЫ -->
+    <div id="paymentModal" class="fixed inset-0 z-[61] hidden">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity" onclick="closePaymentModal()"></div>
+
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-surface border border-white/10 rounded-2xl p-6 shadow-2xl">
+            <form id="paymentForm" class="space-y-4">
+                <div class="text-center mb-4">
+                    <img src="i/oplati.png" alt="Oplati" class="h-10 mx-auto mb-3 invert">
+                    <h3 class="font-display font-bold text-2xl text-white mb-1">Оплата через Oplati</h3>
+                    <p class="text-gray-400 text-sm">После продолжения будет создан QR-код для оплаты</p>
+                </div>
+
+                <div>
+                    <label for="paymentSum" class="block text-gray-300 text-sm mb-2">Сумма (BYN)</label>
+                    <input id="paymentSum" name="sum" required type="number" min="0.01" step="0.01" value="10" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon">
+                </div>
+
+                <div>
+                    <label for="paymentComment" class="block text-gray-300 text-sm mb-2">Комментарий</label>
+                    <input id="paymentComment" name="comment" type="text" placeholder="Например: Подарочный сертификат" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-neon">
+                </div>
+
+                <button id="paymentContinue" type="submit" class="w-full bg-neon text-black font-bold py-3 rounded-xl hover:bg-white transition-colors">
+                    Продолжить
+                </button>
+                <button id="paymentLoading" type="button" disabled class="hidden w-full bg-white/10 text-gray-300 font-bold py-3 rounded-xl cursor-not-allowed">
+                    Загрузка...
+                </button>
+            </form>
+
+            <div id="paymentDetails" class="hidden text-center">
+                <img src="i/logo_Oplati_black.svg" alt="Oplati" class="h-8 mx-auto mb-5 invert">
+                <p id="paymentDetailsSum" class="text-white font-bold text-xl mb-3"></p>
+                <p class="text-gray-300 text-sm mb-4">Отсканируйте QR-код в приложении Oplati</p>
+                <img id="paymentQr" alt="QR для оплаты Oplati" class="w-52 h-52 mx-auto rounded-lg border border-white/10 bg-white p-2 mb-5">
+                <a id="paymentOpenApp" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center bg-neon text-black font-bold px-6 py-3 rounded-xl hover:bg-white transition-colors">
+                    Оплатить
+                </a>
+            </div>
+
+            <div id="paymentSuccess" class="hidden text-center">
+                <img src="i/logo_Oplati_black.svg" alt="Oplati" class="h-8 mx-auto mb-5 invert">
+                <p class="text-neon font-bold text-xl">Успешно оплачено</p>
+            </div>
+
+            <div id="paymentError" class="hidden text-center">
+                <img src="i/logo_Oplati_black.svg" alt="Oplati" class="h-8 mx-auto mb-5 invert">
+                <p class="text-red-400 font-bold text-xl">Не удалось осуществить платеж</p>
+            </div>
+
+            <button onclick="closePaymentModal()" class="mt-6 text-gray-500 hover:text-white text-sm w-full py-2">
+                Закрыть окно
+            </button>
+        </div>
+    </div>
+
     <!-- Скрипт для модального окна и меню -->
     <script>
-        function openModal() {
-            const modal = document.getElementById('bookingModal');
-            // Вычисляем ширину скроллбара, чтобы избежать скачка
+        const OPLATI_REG_NUM = 'OPL000055563';
+        const OPLATI_PASSWORD = 'Savichya65';
+        const OPLATI_CREATE_URL = 'https://cashboxapi.o-plati.by/ms-pay/pos/webPayments';
+        const OPLATI_STATUS_URL = 'https://cashboxapi.o-plati.by/ms-pay/pos/payments';
+
+        let paymentPollTimer = null;
+        let currentPaymentId = null;
+
+        function lockPageScroll() {
             const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-            
             document.body.style.paddingRight = `${scrollbarWidth}px`;
-            
-            // Также добавляем отступ для фиксированной шапки
+            document.body.style.overflow = 'hidden';
+
             const navbar = document.getElementById('navbar');
             if (navbar) {
                 navbar.style.paddingRight = `${scrollbarWidth}px`;
             }
+        }
 
+        function unlockPageScroll() {
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+
+            const navbar = document.getElementById('navbar');
+            if (navbar) {
+                navbar.style.paddingRight = '';
+            }
+        }
+
+        function openModal() {
+            const modal = document.getElementById('bookingModal');
             modal.classList.remove('hidden');
-            // Блокируем скролл страницы
-            document.body.style.overflow = 'hidden';
+            lockPageScroll();
         }
 
         function closeModal() {
             const modal = document.getElementById('bookingModal');
             modal.classList.add('hidden');
-            
-            // Возвращаем скролл и убираем отступы
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
-            
-            const navbar = document.getElementById('navbar');
-            if (navbar) {
-                navbar.style.paddingRight = '';
+            unlockPageScroll();
+        }
+
+        function clearPaymentPolling() {
+            if (paymentPollTimer) {
+                clearTimeout(paymentPollTimer);
+                paymentPollTimer = null;
+            }
+        }
+
+        function setPaymentView(view) {
+            const paymentForm = document.getElementById('paymentForm');
+            const paymentDetails = document.getElementById('paymentDetails');
+            const paymentSuccess = document.getElementById('paymentSuccess');
+            const paymentError = document.getElementById('paymentError');
+
+            if (paymentForm) paymentForm.classList.toggle('hidden', view !== 'form');
+            if (paymentDetails) paymentDetails.classList.toggle('hidden', view !== 'details');
+            if (paymentSuccess) paymentSuccess.classList.toggle('hidden', view !== 'success');
+            if (paymentError) paymentError.classList.toggle('hidden', view !== 'error');
+        }
+
+        function resetPaymentState() {
+            clearPaymentPolling();
+            currentPaymentId = null;
+
+            const paymentSum = document.getElementById('paymentSum');
+            const paymentComment = document.getElementById('paymentComment');
+            const paymentDetailsSum = document.getElementById('paymentDetailsSum');
+            const paymentQr = document.getElementById('paymentQr');
+            const paymentOpenApp = document.getElementById('paymentOpenApp');
+            const paymentContinue = document.getElementById('paymentContinue');
+            const paymentLoading = document.getElementById('paymentLoading');
+
+            if (paymentSum) {
+                paymentSum.value = '10';
+                paymentSum.disabled = false;
+            }
+            if (paymentComment) {
+                paymentComment.value = '';
+                paymentComment.disabled = false;
+            }
+            if (paymentDetailsSum) paymentDetailsSum.textContent = '';
+            if (paymentQr) paymentQr.removeAttribute('src');
+            if (paymentOpenApp) paymentOpenApp.removeAttribute('href');
+            if (paymentContinue) paymentContinue.classList.remove('hidden');
+            if (paymentLoading) paymentLoading.classList.add('hidden');
+
+            setPaymentView('form');
+        }
+
+        function openPaymentModal() {
+            const paymentModal = document.getElementById('paymentModal');
+            resetPaymentState();
+            paymentModal.classList.remove('hidden');
+            lockPageScroll();
+        }
+
+        function closePaymentModal() {
+            const paymentModal = document.getElementById('paymentModal');
+            paymentModal.classList.add('hidden');
+            resetPaymentState();
+            unlockPageScroll();
+        }
+
+        function schedulePaymentStatusCheck() {
+            clearPaymentPolling();
+            paymentPollTimer = setTimeout(checkPaymentStatus, 3000);
+        }
+
+        async function checkPaymentStatus() {
+            const paymentModal = document.getElementById('paymentModal');
+            if (!paymentModal || paymentModal.classList.contains('hidden') || !currentPaymentId) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${OPLATI_STATUS_URL}/${currentPaymentId}`, {
+                    headers: {
+                        regNum: OPLATI_REG_NUM,
+                        password: OPLATI_PASSWORD,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const data = await response.json();
+
+                if (data.status > 0) {
+                    clearPaymentPolling();
+                    currentPaymentId = null;
+                    setPaymentView(data.status === 1 ? 'success' : 'error');
+                    return;
+                }
+
+                schedulePaymentStatusCheck();
+            } catch (error) {
+                schedulePaymentStatusCheck();
+            }
+        }
+
+        async function handlePaymentSubmit(event) {
+            event.preventDefault();
+
+            const paymentSum = document.getElementById('paymentSum');
+            const paymentComment = document.getElementById('paymentComment');
+            const paymentDetailsSum = document.getElementById('paymentDetailsSum');
+            const paymentQr = document.getElementById('paymentQr');
+            const paymentOpenApp = document.getElementById('paymentOpenApp');
+            const paymentContinue = document.getElementById('paymentContinue');
+            const paymentLoading = document.getElementById('paymentLoading');
+
+            const sum = Number(paymentSum.value);
+            if (!Number.isFinite(sum) || sum <= 0) {
+                alert('Введите корректную сумму');
+                return;
+            }
+
+            const orderNumber = Date.now();
+            const comment = paymentComment.value.trim();
+
+            paymentContinue.classList.add('hidden');
+            paymentLoading.classList.remove('hidden');
+            paymentSum.disabled = true;
+            paymentComment.disabled = true;
+
+            try {
+                const response = await fetch(OPLATI_CREATE_URL, {
+                    method: 'POST',
+                    headers: {
+                        regNum: OPLATI_REG_NUM,
+                        password: OPLATI_PASSWORD,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sum,
+                        orderNumber,
+                        regNum: OPLATI_REG_NUM,
+                        details: {
+                            receiptNumber: orderNumber,
+                            items: comment ? [
+                                {
+                                    type: 1,
+                                    name: comment,
+                                    quantity: 1,
+                                    price: sum,
+                                    cost: sum,
+                                },
+                            ] : [
+                                {
+                                    type: 1,
+                                    name: `Заказ №${orderNumber}`,
+                                    quantity: 1,
+                                    price: sum,
+                                    cost: sum,
+                                },
+                            ],
+                            amountTotal: sum,
+                        },
+                    }),
+                });
+                const data = await response.json();
+
+                if (!response.ok || !data.dynamicQR || !data.paymentId) {
+                    throw new Error('Payment creation failed');
+                }
+
+                paymentDetailsSum.textContent = `К оплате ${sum} BYN`;
+                paymentQr.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.dynamicQR)}`;
+                paymentOpenApp.href = `https://getapp.o-plati.by/map/?app_link=${encodeURIComponent(data.dynamicQR)}`;
+
+                currentPaymentId = data.paymentId;
+                setPaymentView('details');
+                schedulePaymentStatusCheck();
+            } catch (error) {
+                clearPaymentPolling();
+                currentPaymentId = null;
+                setPaymentView('error');
+            } finally {
+                paymentSum.disabled = false;
+                paymentComment.disabled = false;
+                paymentContinue.classList.remove('hidden');
+                paymentLoading.classList.add('hidden');
             }
         }
 
@@ -656,6 +909,10 @@
 
         // Запуск слайдера
         document.addEventListener('DOMContentLoaded', () => {
+            const paymentForm = document.getElementById('paymentForm');
+            if (paymentForm) {
+                paymentForm.addEventListener('submit', handlePaymentSubmit);
+            }
             resetTimer();
         });
     </script>
