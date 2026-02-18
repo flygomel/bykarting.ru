@@ -573,8 +573,19 @@
                 </div>
 
                 <div>
-                    <label for="paymentSum" class="block text-gray-300 text-sm mb-2">Сумма (BYN)</label>
-                    <input id="paymentSum" name="sum" required type="number" min="0.01" step="0.01" value="10" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-neon">
+                    <label for="paymentRides" class="block text-gray-300 text-sm mb-2">Количество заездов</label>
+                    <div class="relative">
+                        <select id="paymentRides" name="rides" required class="w-full appearance-none bg-white/5 border border-white/10 rounded-xl pl-4 pr-12 py-3 text-white focus:outline-none focus:border-neon">
+                            <option value="1">1 заезд</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">1 заезд = 30 BYN</p>
+                </div>
+
+                <div>
+                    <p class="block text-gray-300 text-sm mb-2">Сумма (BYN)</p>
+                    <div id="paymentSum" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white font-semibold">30 BYN</div>
                 </div>
 
                 <div>
@@ -623,8 +634,53 @@
         const OPLATI_CREATE_URL = 'https://cashboxapi.o-plati.by/ms-pay/pos/webPayments';
         const OPLATI_STATUS_URL = 'https://cashboxapi.o-plati.by/ms-pay/pos/payments';
 
+        const CERTIFICATE_RIDE_PRICE = 30;
+
         let paymentPollTimer = null;
         let currentPaymentId = null;
+
+        function getRideWord(count) {
+            const mod10 = count % 10;
+            const mod100 = count % 100;
+
+            if (mod10 === 1 && mod100 !== 11) return 'заезд';
+            if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'заезда';
+            return 'заездов';
+        }
+
+        function updatePaymentSummary() {
+            const paymentRides = document.getElementById('paymentRides');
+            const paymentSum = document.getElementById('paymentSum');
+
+            if (!paymentRides || !paymentSum) return;
+
+            const rawRides = Number(paymentRides.value);
+            const rides = Number.isFinite(rawRides) ? Math.max(1, Math.floor(rawRides)) : 1;
+            const total = rides * CERTIFICATE_RIDE_PRICE;
+
+            if (String(rides) !== paymentRides.value) {
+                paymentRides.value = String(rides);
+            }
+            paymentSum.textContent = `${total} BYN`;
+        }
+
+        function populateRideOptions(maxRides = 20) {
+            const paymentRides = document.getElementById('paymentRides');
+            if (!paymentRides) return;
+
+            const selectedValue = Number(paymentRides.value);
+            const selectedRides = Number.isFinite(selectedValue) ? Math.max(1, Math.floor(selectedValue)) : 1;
+
+            paymentRides.innerHTML = '';
+            for (let i = 1; i <= maxRides; i += 1) {
+                const option = document.createElement('option');
+                option.value = String(i);
+                option.textContent = `${i} ${getRideWord(i)}`;
+                paymentRides.appendChild(option);
+            }
+
+            paymentRides.value = String(Math.min(selectedRides, maxRides));
+        }
 
         function lockPageScroll() {
             const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -683,6 +739,7 @@
             currentPaymentId = null;
 
             const paymentSum = document.getElementById('paymentSum');
+            const paymentRides = document.getElementById('paymentRides');
             const paymentComment = document.getElementById('paymentComment');
             const paymentDetailsSum = document.getElementById('paymentDetailsSum');
             const paymentQr = document.getElementById('paymentQr');
@@ -690,9 +747,12 @@
             const paymentContinue = document.getElementById('paymentContinue');
             const paymentLoading = document.getElementById('paymentLoading');
 
+            if (paymentRides) {
+                paymentRides.value = '1';
+                paymentRides.disabled = false;
+            }
             if (paymentSum) {
-                paymentSum.value = '10';
-                paymentSum.disabled = false;
+                paymentSum.textContent = `${CERTIFICATE_RIDE_PRICE} BYN`;
             }
             if (paymentComment) {
                 paymentComment.value = '';
@@ -704,6 +764,7 @@
             if (paymentContinue) paymentContinue.classList.remove('hidden');
             if (paymentLoading) paymentLoading.classList.add('hidden');
 
+            updatePaymentSummary();
             setPaymentView('form');
         }
 
@@ -759,6 +820,7 @@
             event.preventDefault();
 
             const paymentSum = document.getElementById('paymentSum');
+            const paymentRides = document.getElementById('paymentRides');
             const paymentComment = document.getElementById('paymentComment');
             const paymentDetailsSum = document.getElementById('paymentDetailsSum');
             const paymentQr = document.getElementById('paymentQr');
@@ -766,18 +828,22 @@
             const paymentContinue = document.getElementById('paymentContinue');
             const paymentLoading = document.getElementById('paymentLoading');
 
-            const sum = Number(paymentSum.value);
-            if (!Number.isFinite(sum) || sum <= 0) {
-                alert('Введите корректную сумму');
+            const rides = Number(paymentRides.value);
+            if (!Number.isFinite(rides) || rides < 1) {
+                alert('Введите корректное количество заездов');
                 return;
             }
+            const normalizedRides = Math.floor(rides);
+            const sum = normalizedRides * CERTIFICATE_RIDE_PRICE;
+            paymentRides.value = String(normalizedRides);
+            paymentSum.textContent = `${sum} BYN`;
 
             const orderNumber = Date.now();
-            const comment = paymentComment.value.trim();
+            const comment = paymentComment.value.trim() || `Подарочный сертификат: ${normalizedRides} ${getRideWord(normalizedRides)}`;
 
             paymentContinue.classList.add('hidden');
             paymentLoading.classList.remove('hidden');
-            paymentSum.disabled = true;
+            paymentRides.disabled = true;
             paymentComment.disabled = true;
 
             try {
@@ -794,20 +860,12 @@
                         regNum: OPLATI_REG_NUM,
                         details: {
                             receiptNumber: orderNumber,
-                            items: comment ? [
+                            items: [
                                 {
                                     type: 1,
                                     name: comment,
-                                    quantity: 1,
-                                    price: sum,
-                                    cost: sum,
-                                },
-                            ] : [
-                                {
-                                    type: 1,
-                                    name: `Заказ №${orderNumber}`,
-                                    quantity: 1,
-                                    price: sum,
+                                    quantity: normalizedRides,
+                                    price: CERTIFICATE_RIDE_PRICE,
                                     cost: sum,
                                 },
                             ],
@@ -833,7 +891,7 @@
                 currentPaymentId = null;
                 setPaymentView('error');
             } finally {
-                paymentSum.disabled = false;
+                paymentRides.disabled = false;
                 paymentComment.disabled = false;
                 paymentContinue.classList.remove('hidden');
                 paymentLoading.classList.add('hidden');
@@ -904,9 +962,15 @@
         // Запуск слайдера
         document.addEventListener('DOMContentLoaded', () => {
             const paymentForm = document.getElementById('paymentForm');
+            const paymentRides = document.getElementById('paymentRides');
             if (paymentForm) {
                 paymentForm.addEventListener('submit', handlePaymentSubmit);
             }
+            populateRideOptions();
+            if (paymentRides) {
+                paymentRides.addEventListener('change', updatePaymentSummary);
+            }
+            updatePaymentSummary();
             resetTimer();
         });
     </script>
